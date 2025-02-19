@@ -1,17 +1,20 @@
 import Icon from "react-native-vector-icons/FontAwesome";
+import { getItem } from "./AsyncStorage";
 
 const SelectIcon = ({ route }) => ({
   tabBarIcon: ({ color, size }) => {
     // Define el ícono según la pantalla
     let iconName;
-
+    const data = getItem("USER");
     if (route.name === "Home") {
       iconName = "home"; // Ícono para "Home"
     } else if (route.name === "Foro") {
       iconName = "comment"; // Ícono para "Settings"
-    } else if (route.name === "Modal") {
+    } else if (route.name === "Crear articulo") {
       iconName = "plus-circle"; // Ícono para "Settings"
     } else if (route.name === "Register") {
+      iconName = "user"; // Ícono para "Settings"
+    } else if (route.name === "Perfil") {
       iconName = "user"; // Ícono para "Settings"
     }
 

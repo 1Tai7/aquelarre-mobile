@@ -5,38 +5,22 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons"; // Íconos de Expo
 import Boton from "../../components/boton";
 import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { registerWithEmailAndPassword } from "../../firebase/auth";
+import { loginWithEmailAndPassword } from "../../firebase/auth";
 import { setItem } from "../../utils/AsyncStorage";
 
-const RegisterT = ({ handleUserUpdate }) => {
+const LoginScreen = ({ handleUserUpdate }) => {
   const navigation = useNavigation();
-  const [selectedEmoji, setSelectedEmoji] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: "",
-    alias: "",
     contrasena: "",
     email: "",
   });
-
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
-
-  const emojis = ["😸", "😋", "👩", "🙆‍♀️", "💃", "👧"];
-
-  const toggleEmojiContainer = () => {
-    setIsVisible(!isVisible);
-  };
-
-  const handleEmojiClick = (emoji) => {
-    setSelectedEmoji(emoji);
-    setIsVisible(false);
-  };
 
   const handleInputChange = (name, value) => {
     setFormData((prevData) => ({
@@ -47,9 +31,6 @@ const RegisterT = ({ handleUserUpdate }) => {
 
   const validarFormulario = async () => {
     let newErrors = {};
-    if (!selectedEmoji) newErrors.icon = "Seleccione un emoji para iniciar";
-    if (!formData.nombre) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.alias) newErrors.alias = "El alias es obligatorio.";
     if (!formData.contrasena)
       newErrors.contrasena = "La contraseña es obligatoria.";
     if (!formData.email)
@@ -61,16 +42,13 @@ const RegisterT = ({ handleUserUpdate }) => {
     } else {
       setErrors({});
       setSuccess(true);
-      const { user } = await registerWithEmailAndPassword({
+      const { user } = await loginWithEmailAndPassword({
         email: formData.email,
         password: formData.contrasena,
-        displayName: formData.alias,
-        photoUrl: selectedEmoji,
-        name: formData.nombre,
       });
       setItem("USER", user);
       handleUserUpdate();
-      navigation.navigate("Home", { replace: true });
+      navigation.replace("Home", { replace: true });
       handleUserUpdate();
     }
   };
@@ -81,62 +59,22 @@ const RegisterT = ({ handleUserUpdate }) => {
         style={{ flex: 1, width: "100%" }}
         keyboardShouldPersistTaps="always"
       >
-        {/* Contenedor de Avatares */}
-
-        <View style={styles.avatarContainer}>
-          <View style={styles.containerAvatar}>
-            <Text style={styles.text}>{selectedEmoji}</Text>
-          </View>
-          <TouchableOpacity
-            onPress={toggleEmojiContainer}
-            style={styles.button}
-          >
-            <MaterialCommunityIcons
-              name="emoticon-happy-outline"
-              size={24}
-              color="black"
-            />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.errorText}>{errors.icon}</Text>
-        {isVisible && (
-          <View style={styles.emojis}>
-            {emojis.map((emoji) => (
-              <TouchableOpacity
-                key={emoji}
-                onPress={() => handleEmojiClick(emoji)}
-                style={[
-                  styles.emoji,
-                  selectedEmoji === emoji && styles.selectedEmojiBorder,
-                ]}
-              >
-                <Text style={styles.emojiText}>{emoji}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
+        <Image
+          style={styles.logo}
+          source={require("./../../assets/logo-aquellare-app.png")}
+        />
         {/* Formulario */}
         <View style={styles.form}>
           <Text style={styles.label}>
-            Nombre completo: <Text style={styles.required}>*</Text>
+            Correo electrónico: <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             style={styles.input}
-            value={formData.nombre}
-            onChangeText={(value) => handleInputChange("nombre", value)}
+            value={formData.email}
+            onChangeText={(value) => handleInputChange("email", value)}
+            keyboardType="email-address"
           />
-          <Text style={styles.errorText}>{errors.nombre}</Text>
-
-          <Text style={styles.label}>
-            Alias: <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={formData.alias}
-            onChangeText={(value) => handleInputChange("alias", value)}
-          />
-          <Text style={styles.errorText}>{errors.alias}</Text>
+          <Text style={styles.errorText}>{errors.email}</Text>
 
           <Text style={styles.label}>
             Contraseña: <Text style={styles.required}>*</Text>
@@ -148,17 +86,6 @@ const RegisterT = ({ handleUserUpdate }) => {
             secureTextEntry
           />
           <Text style={styles.errorText}>{errors.contrasena}</Text>
-
-          <Text style={styles.label}>
-            Correo electrónico: <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={formData.email}
-            onChangeText={(value) => handleInputChange("email", value)}
-            keyboardType="email-address"
-          />
-          <Text style={styles.errorText}>{errors.email}</Text>
 
           <TouchableOpacity
             onPress={validarFormulario}
@@ -175,19 +102,17 @@ const RegisterT = ({ handleUserUpdate }) => {
                 width: "100%",
                 paddingTop: 20,
               }}
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => navigation.navigate("Register")}
             >
-              <Text style={styles.linkText}>Ya tengo una cuenta</Text>
+              <Text style={styles.linkText}>Aun no tengo una cuenta</Text>
               <Boton
                 handleClick={() => {
-                  navigation.navigate("Login");
+                  navigation.navigate("Register");
                 }}
               ></Boton>
             </TouchableOpacity>
           </View>
-          {success && (
-            <Text style={styles.successText}>¡Registro Exitoso!</Text>
-          )}
+          {success && <Text style={styles.successText}>¡Benvenido!</Text>}
         </View>
       </KeyboardAwareScrollView>
     </View>
@@ -195,27 +120,6 @@ const RegisterT = ({ handleUserUpdate }) => {
 };
 
 const styles = StyleSheet.create({
-  text: {
-    fontSize: 40, // Equivalente a 3rem
-    color: "white", // Ajusta el color del texto según tu diseño
-  },
-  containerAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(106, 73, 191, 0.89)",
-    backgroundGradient: {
-      colors: ["rgba(106, 73, 191, 0.89)", "rgba(71, 211, 191, 0.89)"],
-    },
-    elevation: 5, // Sombra para Android
-    shadowColor: "#000", // Sombra para iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
   container: {
     flex: 1,
     padding: 20,
@@ -231,7 +135,6 @@ const styles = StyleSheet.create({
   avatarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     marginBottom: 20,
   },
   selectedEmoji: {
@@ -244,10 +147,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   emojis: {
-    display: "flex",
     flexDirection: "row",
     flexWrap: "wrap",
-    width: "100%",
+    marginBottom: 20,
   },
   emoji: {
     padding: 10,
@@ -311,4 +213,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterT;
+export default LoginScreen;

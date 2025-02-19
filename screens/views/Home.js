@@ -1,17 +1,14 @@
-import React from "react";
-import { StyleSheet, View, Text, ImageBackground } from "react-native";
-
+import { useEffect } from "react";
+import { StyleSheet, View, ImageBackground } from "react-native";
 const HomeT = () => {
   return (
-    <>
-      <View style={styles.container}>
-        <ImageBackground
-          source={require("./../../assets/fondo-aquellare-app.png")} // Imagen local en la carpeta 'assets'
-          style={styles.background}
-          imageStyle={styles.image}
-        ></ImageBackground>
-      </View>
-    </>
+    <View style={styles.container}>
+      <ImageBackground
+        source={require("./../../assets/fondo-aquellare-app.png")} // Imagen local en la carpeta 'assets'
+        style={styles.background}
+        imageStyle={styles.image}
+      ></ImageBackground>
+    </View>
   );
 };
 

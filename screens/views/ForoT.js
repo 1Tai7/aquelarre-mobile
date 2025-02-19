@@ -1,36 +1,63 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import Boton from "../../components/boton";
 import { useNavigation } from "@react-navigation/native";
+import { getPosts } from "../../firebase/post";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-// const MyIcon = () => <Icon name="caret-right" size={30} color="#000" />;
-
-const ForoT = () => {
+const ForoT = ({ user }) => {
   const navigation = useNavigation();
-  console.log(navigation.navigate);
+  const [posts, setPost] = useState([]);
+
+  useEffect(() => {
+    const getAllData = async () => {
+      const data = await getPosts();
+      setPost(data || []);
+    };
+    getAllData();
+  }, []);
   return (
     <>
-      <View style={styles.postContainer}>
-        <View style={styles.headerPost}>
-          <Text style={styles.title}>Titulo</Text>
-          <Text style={styles.username}>@usuario</Text>
-        </View>
-        <Text style={styles.paragraph}>parrafo</Text>
-        <View style={styles.hashtagButton}>
-          <Text style={styles.hashtag}>#hola</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Post")}
-            style={styles.linkButton}
-          >
-            <Text style={styles.linkText}>Entrar al post</Text>
-            <Boton
-              handleClick={() => {
-                navigation.navigate("Post");
-              }}
-            ></Boton>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <KeyboardAwareScrollView
+        style={{ flex: 1, width: "100%" }}
+        keyboardShouldPersistTaps="always"
+      >
+        {posts &&
+          posts?.map((item) => {
+            return (
+              <View style={styles.postContainer}>
+                <View style={styles.headerPost}>
+                  <Text style={styles.title}>{item?.title}</Text>
+                  <Text style={styles.username}>{`@${item?.autor}`}</Text>
+                </View>
+                <Text style={styles.paragraph}>{item.text}</Text>
+                <View style={styles.hashtagButton}>
+                  {item?.tags.map((tag) => (
+                    <Text style={styles.hashtag}>{tag}</Text>
+                  ))}
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("Post", {
+                        title: item.title,
+                        text: item.text,
+                        autor: item.autor,
+                        tags: item.tags,
+                      })
+                    }
+                    style={styles.linkButton}
+                  >
+                    <Text style={styles.linkText}>Entrar al post</Text>
+                    <Boton
+                      handleClick={() => {
+                        navigation.navigate("Post");
+                      }}
+                    ></Boton>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })}
+      </KeyboardAwareScrollView>
     </>
   );
 };
@@ -38,7 +65,20 @@ const ForoT = () => {
 export default ForoT;
 const styles = StyleSheet.create({
   postContainer: {
-    padding: 15,
+    padding: 20,
+    // Sombras para iOS
+    shadowColor: "#000", // Color de la sombra
+    shadowOffset: { width: 0, height: 0.5 }, // Desplazamiento de la sombra
+    shadowOpacity: 0.5, // Opacidad de la sombra
+    shadowRadius: 10, // Radio de la sombra
+
+    // Sombra para Android (elevation)
+    elevation: 3, // Valor de elevación (ajusta según necesites)
+
+    // Borde (opcional)
+    borderWidth: 0.2, // Ancho del borde
+    borderColor: "#ddd", // Color del borde (gris claro en este ejemplo)
+    borderRadius: 0.5,
   },
   headerPost: {
     marginBottom: 10,

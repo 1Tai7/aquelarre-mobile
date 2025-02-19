@@ -1,45 +1,29 @@
 import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 //screens
 import HomeT from "./screens/views/Home";
-import ForoT from "./screens/views/ForoT";
-import PostS from "./screens/views/PostS";
-import RegisterT from "./screens/views/Register";
 import SelectIcon from "./utils/selectIcon";
 import ModalT from "./screens/views/Modal";
-import { Text, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
+import PostStack from "./utils/PostStack";
+import StackRegister from "./utils/RegisterStack";
+import Perfil from "./screens/views/Perfil";
 
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-function PostStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Foro"
-        component={ForoT}
-        options={{ tabBarLabel: "Foro" }}
-      />
-      <Stack.Screen name="Post" component={PostS} />
-    </Stack.Navigator>
-  );
-}
-
-const Tab = createBottomTabNavigator({
-  screens: {
-    Post: PostS,
-  },
-});
-
-function TabNavitagor() {
+function TabNavitagor({ user, handleUserUpdate }) {
   const [modalVisible, setModalVisible] = useState(false);
-  console.log(modalVisible);
 
-  return (
+  const MyTabs = () => (
     <>
-      <ModalT modalVisible={modalVisible} setModalVisible={setModalVisible} />;
+      <ModalT
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        user={user}
+        handleUserUpdate={handleUserUpdate}
+      />
       <Tab.Navigator screenOptions={SelectIcon}>
         <Tab.Screen
           name="Home"
@@ -48,50 +32,53 @@ function TabNavitagor() {
         />
         <Tab.Screen
           name="Foro"
-          component={PostStack}
+          component={() => <PostStack user={user} />}
           options={{ headerShown: false }}
         />
-        <Tab.Screen
-          name="Modal"
-          component={HomeT}
-          options={{
-            tabBarLabel: "Modal",
-            tabBarButton: (props) => (
-              <TouchableOpacity
-                {...props}
-                onPress={() => setModalVisible(true)}
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "black" }}>Modal</Text>
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Register"
-          component={RegisterT}
-          options={{ tabBarLabel: "Registro" }}
-        />
+
+        {user ? (
+          <>
+            <Tab.Screen
+              name="Crear articulo"
+              component={HomeT}
+              options={{
+                tabBarButton: (props) => (
+                  <TouchableOpacity
+                    {...props}
+                    onPress={() => setModalVisible(true)}
+                  />
+                ),
+              }}
+            />
+
+            <Tab.Screen
+              name="Perfil"
+              component={() => (
+                <Perfil user={user} handleUserUpdate={handleUserUpdate} />
+              )}
+              options={{ headerShown: true }}
+            />
+          </>
+        ) : (
+          <Tab.Screen
+            name="Register"
+            component={() => (
+              <StackRegister handleUserUpdate={handleUserUpdate} />
+            )}
+            options={{ headerShown: false }}
+          />
+        )}
       </Tab.Navigator>
     </>
   );
+
+  return user ? <MyTabs /> : <MyTabs />;
 }
 
-export default function Navigation() {
+export default function Navigation({ user, handleUserUpdate }) {
   return (
     <NavigationContainer>
-      <TabNavitagor />
-      {/* <Stack.Navigator mode="modal">
-        <Stack.Screen
-          name="Modal"
-          component={Modal}
-          options={{ headerShown: false, presentation: "modal" }}
-        />
-      </Stack.Navigator> */}
+      <TabNavitagor user={user} handleUserUpdate={handleUserUpdate} />
     </NavigationContainer>
   );
 }
